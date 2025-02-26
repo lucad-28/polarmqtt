@@ -15,6 +15,7 @@ admin.initializeApp({
 });
 
 const db = admin.database();
+const dbFs = admin.firestore();
 
 const mqttServer = net.createServer(aedes.handle);
 const mqttPort = process.env.MQTT_PORT || 1883;
@@ -27,9 +28,46 @@ aedes.on("client", (client) => {
 });
 
 aedes.on("publish", async (packet, client) => {
+  let log = `[${new Date().toISOString()}] `;
   if (client) {
-    console.log(`📡 Mensaje de ${client.id}: ${packet.payload.toString()}`);
+    log += ` Mensaje de ${client.id}: ${packet.payload.toString()} \n`;
+    const message = packet.payload.toString();
+    const topic = packet.topic;
+
+    if (topic === "devices/data") {
+      try {
+        const data = JSON.parse(message);
+        const { deviceId, cooling, temperature, volume } = data;
+        if (deviceId) {
+          log += `Actualización de datos de ${deviceId}: ${JSON.stringify(
+            data
+          )} \n`;
+          const deviceRef = db.ref(`devices/${deviceId}`);
+          deviceRef.update({ cooling, temperature, volume });
+
+          log += `Datos de ${deviceId} actualizados en Realtime Database \n`;
+
+          const historyRef = dbFs.collection("history").doc();
+          historyRef.set({
+            deviceId,
+            cooling,
+            temperature,
+            volume,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          log += `Datos de ${deviceId} almacenados en Firestore \n`;
+        }
+      } catch (error) {
+        log += `Error al procesar mensaje: ${message} de ${client.id} \n`;
+      }
+    }
+  } else {
+    log += `Publicación recibida sin cliente: ${
+      packet.topic
+    } ${packet.payload.toString()} \n`;
   }
+  console.log(log);
 });
 
 const app = express();
