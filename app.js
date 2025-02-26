@@ -37,7 +37,7 @@ aedes.on("publish", async (packet, client) => {
     log += `Publicación recibida: ${
       packet.topic
     } ${packet.payload.toString()} \n`;
-    
+
     if (topic === "devices/data") {
       try {
         const data = JSON.parse(message);
@@ -63,7 +63,7 @@ aedes.on("publish", async (packet, client) => {
           log += `Datos de ${deviceId} almacenados en Firestore \n`;
         }
       } catch (error) {
-        log += `Error al procesar mensaje: ${message} de ${client.id} \n`;
+        log += `Error al procesar mensaje: ${message} de ${client.id} \n ${error.message} `;
       }
     }
   } else {
