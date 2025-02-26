@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: polar-mqtt-web
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: FIREBASE_CLIENT_EMAIL
+        value: ${FIREBASE_CLIENT_EMAIL}
+      - key: FIREBASE_PRIVATE_KEY
+        value: ${FIREBASE_PRIVATE_KEY}
+      - key: FIREBASE_PROJECT_ID
+        value: ${FIREBASE_PROJECT_ID}
+      - key: FIREBASE_DATABASE_URL
+        value: ${FIREBASE_DATABASE_URL}
+      - key: MQTT_PORT
+        value: ${MQTT_PORT}
+      - key: HTTP_PORT
+        value: ${HTTP_PORT}
+  - type: tcp
+    name: polar-mqtt-tcp
+    env: node
+    plan: free
+    autoDeploy: true
+    port: 1883
+    startCommand: "node index.js"
