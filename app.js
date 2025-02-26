@@ -30,10 +30,14 @@ aedes.on("client", (client) => {
 aedes.on("publish", async (packet, client) => {
   let log = `[${new Date().toISOString()}] `;
   if (client) {
-    log += ` Mensaje de ${client.id}: ${packet.payload.toString()} \n`;
+    log += ` Mensaje de ${client.id} \n`;
     const message = packet.payload.toString();
     const topic = packet.topic;
 
+    log += `Publicación recibida: ${
+      packet.topic
+    } ${packet.payload.toString()} \n`;
+    
     if (topic === "devices/data") {
       try {
         const data = JSON.parse(message);
