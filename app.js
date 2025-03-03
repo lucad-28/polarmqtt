@@ -49,8 +49,20 @@ aedes.on("publish", async (packet, client) => {
           const deviceRef = db.ref(`devices/${deviceId}`);
           deviceRef.update({ cooling, temperature, volume });
 
-          log += `Datos de ${deviceId} actualizados en Realtime Database \n`;
-
+          log += `Datos de ${deviceId} actualizados en Realtime Database \n`; 
+        }
+      } catch (error) {
+        log += `Error al procesar mensaje: ${message} de ${client.id} \n ${error} `;
+      }
+    } else if (topic === "devices/history"){
+      try {
+        const data = JSON.parse(message);
+        const { deviceId, cooling, temperature, volume } = data;
+        if (deviceId) {
+          log += `Actualización de historial de ${deviceId}: ${JSON.stringify(
+            data
+          )} \n`;
+    
           const historyRef = dbFs.collection("history").doc();
           historyRef.set({
             deviceId,
@@ -63,10 +75,10 @@ aedes.on("publish", async (packet, client) => {
           log += `Datos de ${deviceId} almacenados en Firestore \n`;
         }
       } catch (error) {
-        log += `Error al procesar mensaje: ${message} de ${client.id} \n ${error.message} `;
+        log += `Error al procesar mensaje: ${message} de ${client.id} \n ${error} `;
       }
     }
-  } else {
+  }  else {
     log += `Publicación recibida sin cliente: ${
       packet.topic
     } ${packet.payload.toString()} \n`;
